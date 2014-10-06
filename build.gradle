@@ -12,7 +12,6 @@ buildscript {
 
 apply plugin: 'java-gradle-plugin'
 apply plugin: 'groovy'
-apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
@@ -39,52 +38,92 @@ dependencies {
 }
 
 ext {
-  project_website = "https://github.com/{$developerId}/${projectId}"
-  project_scm = "scm:git@github.com:${developerId}/${projectId}.git"
-  license_url = "https://raw.github.com/${developerId}/${projectId}/master/license.txt"
+  project_website = "https://github.com/{$orgId}/${projectId}"
+  project_scm = "scm:git@github.com:${orgId}/${projectId}.git"
+  license_url = "https://raw.github.com/${orgId}/${projectId}/master/license.txt"
 }
 
 if( !hasProperty( 'bintrayUser' ) )
-  ext.bintrayUser = ''
+ext.bintrayUser = ''
 
 if( !hasProperty( 'bintrayKey' ) )
-  ext.bintrayKey = ''
+ext.bintrayKey = ''
+
+def pomConfig = {
+  licenses {
+    license {
+      name "The Apache Software License, Version 2.0"
+      url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+      distribution "repo"
+    }
+  }
+  developers {
+    developer {
+      id "hillkorn"
+      name "Dennis Schumann"
+      email "hillkorn@gmail.com"
+    }
+  }
+}
+
+task sourcesJar(type: Jar) {
+  from sourceSets.main.allSource
+  classifier = 'sources'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from 'build/docs/javadoc'
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      from components.java
+      artifact sourcesJar
+      artifact javadocJar
+    
+      pom.withXml {
+        def root = asNode()
+        root.appendNode('description', 'A Gradle Plugin for doctest.')
+        root.children().last() + pomConfig
+      }
+    }
+  }
+}
 
 bintray {
-    user = 'bintray_user'
-    key = 'bintray_api_key'
+  user = bintrayUser
+  key = bintrayKey
 
-    configurations = ['deployables'] //When uploading configuration files
-    // - OR -
-    publications = ['mavenStuff'] //When uploading Maven-based publication files
-    // - AND/OR -
-    filesSpec { //When uploading any arbitrary files ('filesSpec' is a standard Gradle CopySpec)
-        from 'arbitrary-files'
-        into 'standalone_files/level1'
-        rename '(.+)\\.(.+)', '$1-suffix.$2'
+  publications = ['mavenJava']
+
+  dryRun = false //Whether to run this as dry-run, without deploying
+  publish = false //If version should be auto published after an upload
+  pkg {
+    repo = 'gradle-plugins'
+    userOrg = orgId
+    name = 'doctest-gradle-plugin'
+    desc = 'Gradle Doctest plugin. Integrates doctest into an project with an additional source set and task.'
+    websiteUrl = project.project_website
+    issueTrackerUrl = "https://github.com/${orgId}/${projectId}/issues"
+    vcsUrl = project.project_scm
+    licenses = ['Apache-2.0']
+    labels = ['doctest', 'gradle', 'plugin']
+    publicDownloadNumbers = true
+    //Optional version descriptor
+    version {
+      name = project.version
+      userOrg = orgId
+      vcsTag = project.version
+      attributes = ['gradle-plugin': 'com.devbliss:com.devbliss.doctest:doctest-gradle-plugin'] //Optional version-level attributes
+//      gpg {
+//        sign = true //Determines whether to GPG sign the files. The default is false
+//      }
     }
-    dryRun = false //Whether to run this as dry-run, without deploying
-    publish = true //If version should be auto published after an upload
-    pkg {
-        repo = 'maven'
-        userOrg = 'devbliss'
-        name = 'doctest-gradle-plugin'
-        desc = 'Gradle Doctest plugin. Integrates doctest into an project with an additional source set and task.'
-        websiteUrl = project.project_website
-        issueTrackerUrl = "https://github.com/{$developerId}/${projectId}/issues"
-        vcsUrl = project.project_scm
-        licenses = ['Apache-2.0']
-        labels = ['doctest', 'gradle plugin']
-        publicDownloadNumbers = true
-        //Optional version descriptor
-        version {
-            name = project.version
-            released  = new Date()
-            vcsTag = project.version
-            attributes = ['gradle-plugin': 'com.devbliss:com.devbliss.doctest:doctest-gradle-plugin'] //Optional version-level attributes
-            gpg {
-                sign = true //Determines whether to GPG sign the files. The default is false
-            }
-        }
-    }
+  }
+}
+
+task install(dependsOn: 'publishMavenJavaPublicationToMavenLocal') << {
+  logger.info "Installing $project.name"
 }
