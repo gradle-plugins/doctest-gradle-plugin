@@ -116,10 +116,7 @@ bintray {
       name = project.version
       userOrg = orgId
       vcsTag = project.version
-      attributes = ['gradle-plugin': 'com.devbliss:com.devbliss.doctest:doctest-gradle-plugin'] //Optional version-level attributes
-//      gpg {
-//        sign = true //Determines whether to GPG sign the files. The default is false
-//      }
+      attributes = ['gradle-plugin': 'com.devbliss.doctest:com.devbliss.doctest:doctest-gradle-plugin'] //Optional version-level attributes
     }
   }
 }
