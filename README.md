@@ -22,6 +22,10 @@ doctest {
 
 ```
 
+To run the doctests you need to start the "doctest" task
+
+``` gradle doctest ```
+
 ##Tested with
 
 JDK 8 and Gradle 2.x
