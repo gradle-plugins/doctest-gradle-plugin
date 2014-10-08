@@ -1,25 +1,16 @@
 #Doctest gradle plugin
-Plugin to use doctest within a gradle build project.
+Plugin to use [doctest](https://github.com/devbliss/doctest) within a gradle build project.
 
 ##Getting Started
 
-```gradle
+There are two ways to integrate doctests into your build. Both are shown on the [Doctest Plugin Page](http://plugins.gradle.org/plugin/com.devbliss.doctest).
 
-buildscript {
-  repositories {
-    mavenLocal()
-    jcenter()
-  }
-  
-  dependencies {
-    classpath "com.devbliss.doctest:doctest-gradle-plugin:0.1"
-  }
-}
+To configure the output directory of the  html doc you need to set the docHtmlDir path as a string. If it's not set you find the html output in build/reports/doctest.
 
+```
 doctest {
   docHtmlDir = "/doctest-api-doc/" //optional - default is build/reports/doctest
 }
-
 ```
 
 To run the doctests you need to start the "doctest" task
