@@ -14,8 +14,13 @@
 
 package com.devbliss.doctest
 
+import static org.gradle.util.WrapUtil.toLinkedSet
+import static org.hamcrest.Matchers.*
+import static org.junit.Assert.*
+
 import com.devbliss.doctest.task.DoctestTask
 import org.gradle.api.Project
+import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Rule
 import org.junit.Test
 
@@ -27,7 +32,7 @@ import org.junit.Test
 class DoctestPluginTest {
   private Project project;
   private final DoctestPlugin doctestPlugin = new DoctestPlugin();
-  
+
   @Test public void applyStandardTask() {
     project = ProjectBuilder.builder().build();
     doctestPlugin.apply(project)
@@ -38,16 +43,16 @@ class DoctestPluginTest {
 
   @Test
   public void createsStandardSourceSetsAndAppliesMappings() {
+    project = ProjectBuilder.builder().build();
     doctestPlugin.apply(project);
 
     def set = project.sourceSets[DoctestPlugin.DOCTEST_SOURCE_SET_NAME];
     assertThat(set.java.srcDirs, equalTo(toLinkedSet(project.file('src/doctest/java'))));
     assertThat(set.resources.srcDirs, equalTo(toLinkedSet(project.file('src/doctest/resources'))));
-    assertThat(set.compileClasspath, sameInstance(project.configurations.doctestCompile));
+    assertThat(set.compileClasspath.sourceCollections, hasItem(project.configurations.doctestCompile));
     assertThat(set.output.classesDir, equalTo(new File(project.buildDir, 'classes/doctest')));
     assertThat(set.output.resourcesDir, equalTo(new File(project.buildDir, 'resources/doctest')));
     assertThat(set.runtimeClasspath.sourceCollections, hasItem(project.configurations.doctestRuntime));
     assertThat(set.runtimeClasspath, hasItem(new File(project.buildDir, 'classes/doctest')));
   }
 }
-
