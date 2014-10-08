@@ -1,6 +1,9 @@
 #Doctest gradle plugin
 Plugin to use [doctest](https://github.com/devbliss/doctest) within a gradle build project.
 
+[ ![Download](https://api.bintray.com/packages/devbliss/gradle-plugins/doctest-gradle-plugin/images/download.svg) ](https://bintray.com/devbliss/gradle-plugins/doctest-gradle-plugin/_latestVersion)
+
+
 ##Getting Started
 
 There are two ways to integrate doctests into your build. Both are shown on the [Doctest Plugin Page](http://plugins.gradle.org/plugin/com.devbliss.doctest).
