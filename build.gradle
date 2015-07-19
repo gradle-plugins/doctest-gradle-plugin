@@ -3,7 +3,7 @@ buildscript {
     mavenLocal()
     jcenter()
   }
-  
+
 }
 
 plugins {
@@ -12,7 +12,7 @@ plugins {
 
 apply plugin: 'java-gradle-plugin'
 apply plugin: 'groovy'
-apply plugin: 'maven-publish'
+apply plugin: 'maven'
 
 sourceCompatibility = '1.8'
 
@@ -21,7 +21,6 @@ version = project.version
 
 repositories {
   mavenLocal()
-  maven { url "http://nexus.devbliss.com/content/groups/public" }
   maven { url 'https://repo.gradle.org/gradle/libs' }
   mavenCentral()
 }
@@ -29,9 +28,9 @@ repositories {
 dependencies {
   compile gradleApi()
   compile localGroovy()
-  
+
   compile "com.devbliss.doctest:doctest:$doctestVersion"
-  
+
   testCompile "junit:junit:$junitVersion"
   testCompile "org.mockito:mockito-all:$mockitoVersion"
   testCompile "org.hamcrest:hamcrest-library:$hamcrestVersion"
@@ -49,23 +48,6 @@ ext.bintrayUser = ''
 if( !hasProperty( 'bintrayKey' ) )
 ext.bintrayKey = ''
 
-def pomConfig = {
-  licenses {
-    license {
-      name "The Apache Software License, Version 2.0"
-      url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-      distribution "repo"
-    }
-  }
-  developers {
-    developer {
-      id "hillkorn"
-      name "Dennis Schumann"
-      email "hillkorn@gmail.com"
-    }
-  }
-}
-
 task sourcesJar(type: Jar) {
   from sourceSets.main.allSource
   classifier = 'sources'
@@ -76,32 +58,16 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
   from 'build/docs/javadoc'
 }
 
-publishing {
-  publications {
-    mavenJava(MavenPublication) {
-      from components.java
-      artifact sourcesJar
-      artifact javadocJar
-    
-      pom.withXml {
-        def root = asNode()
-        root.appendNode('description', 'A Gradle Plugin for doctest.')
-        root.children().last() + pomConfig
-      }
-    }
-  }
-}
-
 bintray {
   user = bintrayUser
   key = bintrayKey
 
-  publications = ['mavenJava']
+  configurations = ['archives']
 
   dryRun = false //Whether to run this as dry-run, without deploying
   publish = false //If version should be auto published after an upload
   pkg {
-    repo = 'gradle-plugins'
+    repo = 'gradle-plugin-repository'
     userOrg = orgId
     name = 'doctest-gradle-plugin'
     desc = 'Gradle Doctest plugin. Integrates doctest into an project with an additional source set and task.'
@@ -116,11 +82,7 @@ bintray {
       name = project.version
       userOrg = orgId
       vcsTag = project.version
-      attributes = ['gradle-plugin': 'com.devbliss.doctest:com.devbliss.doctest:doctest-gradle-plugin'] //Optional version-level attributes
+      attributes = ['gradle-plugin': 'org.gradliss.doctest:org.gradliss.doctest:doctest-gradle-plugin'] //Optional version-level attributes
     }
   }
-}
-
-task install(dependsOn: 'publishMavenJavaPublicationToMavenLocal') << {
-  logger.info "Installing $project.name"
 }
